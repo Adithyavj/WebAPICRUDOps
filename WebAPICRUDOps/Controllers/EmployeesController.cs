@@ -9,28 +9,50 @@ using Microsoft.Data.SqlClient;
 using WebAPICRUDOps.Data;
 using WebAPICRUDOps.Models;
 using Microsoft.Extensions.Configuration;
+using System.Data.Common;
 
 namespace WebAPICRUDOps.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class EmployeesController : ControllerBase
+    public class EmployeesController : ControllerBase, Data.BaseDataAccess
     {
-
+        string connection = "";
         IConfiguration _iconfiguration;
-
+        Data.BaseDataAccess baseData;
         public EmployeesController(IConfiguration iconfiguration)
         {
             _iconfiguration = iconfiguration;
+            connection = _iconfiguration.GetValue<string>("Data:DevConnection");
+            Data.BaseDataAccess.ConnectionString = connection;
         }
 
-        public IActionResult Index()
+        [HttpGet]
+        //[ActionName("GetEmployees")]
+        public List<Employee> Employee Get()
         {
-            // First way  
-            //string value1 = _iconfiguration.GetSection("Data").GetSection("DevConnection").Value;
-            // Second way  
-            string connection = _iconfiguration.GetValue<string>("Data:DevConnection");
-            return null;
+            List<Employee> employees = new List<Employee>();
+            //Employee employees = null;
+            List<DbParameter> parameterList = new List<DbParameter>();
+            using (DbDataReader dataReader = baseData.GetDataReader("SelectAll", parameterList, CommandType.StoredProcedure))
+            {
+                if (dataReader != null && dataReader.HasRows)
+                {
+                    while (dataReader.Read())
+                    {
+                        //,Salary=@Salary where EmployeeId=@employeeid	
+                        Employee employee = new Employee();
+                        employee.EmployeeId = (int)dataReader["EmployeeId"];
+                        employee.Name = (string)dataReader["Name"];
+                        employee.Gender = (string)dataReader["Gender"];
+                        employee.Age = (int)dataReader["Age"];
+                        employee.Position = (string)dataReader["Position"];
+                        employee.Salary = (int)dataReader["Salary"];
+                        employees.Add(employee);
+                    }
+                }
+            }
+            return employees;
         }
 
 

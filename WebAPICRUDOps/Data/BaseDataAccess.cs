@@ -8,45 +8,46 @@ using System.Threading.Tasks;
 
 namespace WebAPICRUDOps.Data
 {
-    public class BaseDataAccess
+    public interface BaseDataAccess
     {
-        public string ConnectionString { get; set; }
+        public static string ConnectionString;
+        //public static SqlConnection sconnection = new SqlConnection(ConnectionString);
 
-        public BaseDataAccess()
-        {
+        //public BaseDataAccess()
+        //{
 
-        }
+        //}
 
-        public BaseDataAccess(string connectionString)
-        {
-            this.ConnectionString = connectionString;
-        }
+        //public static BaseDataAccess(string connectionString)
+        //{
+        //    ConnectionString = connectionString;
+        //}
 
         //Open Connection
         private SqlConnection GetConnection()
         {
-            SqlConnection connection = new SqlConnection(this.ConnectionString);
+            SqlConnection connection = new SqlConnection(ConnectionString);
             if (connection.State != ConnectionState.Open)
                 connection.Open();
             return connection;
         }
 
         //Select Statement
-        protected DbCommand GetCommand(DbConnection connection, string commandText, CommandType commandType)
+        public DbCommand GetCommand(DbConnection connection, string commandText, CommandType commandType)
         {
             SqlCommand command = new SqlCommand(commandText, connection as SqlConnection);
             command.CommandType = commandType;
             return command;
         }
 
-        protected SqlParameter GetParameter(string parameter, object value)
+        public SqlParameter GetParameter(string parameter, object value)
         {
             SqlParameter parameterObject = new SqlParameter(parameter, value != null ? value : DBNull.Value);
             parameterObject.Direction = ParameterDirection.Input;
             return parameterObject;
         }
 
-        protected SqlParameter GetParameterOut(string parameter, SqlDbType type, object value = null, ParameterDirection parameterDirection = ParameterDirection.InputOutput)
+        public SqlParameter GetParameterOut(string parameter, SqlDbType type, object value = null, ParameterDirection parameterDirection = ParameterDirection.InputOutput)
         {
             SqlParameter parameterObject = new SqlParameter(parameter, type); ;
 
@@ -69,7 +70,7 @@ namespace WebAPICRUDOps.Data
             return parameterObject;
         }
 
-        protected int ExecuteNonQuery(string procedureName, List<DbParameter> parameters, CommandType commandType = CommandType.StoredProcedure)
+        public int ExecuteNonQuery(string procedureName, List<DbParameter> parameters, CommandType commandType = CommandType.StoredProcedure)
         {
             int returnValue = -1;
 
@@ -96,7 +97,7 @@ namespace WebAPICRUDOps.Data
             return returnValue;
         }
 
-        protected object ExecuteScalar(string procedureName, List<SqlParameter> parameters)
+        public object ExecuteScalar(string procedureName, List<SqlParameter> parameters)
         {
             object returnValue = null;
 
@@ -123,7 +124,7 @@ namespace WebAPICRUDOps.Data
             return returnValue;
         }
 
-        protected DbDataReader GetDataReader(string procedureName, List<DbParameter> parameters, CommandType commandType = CommandType.StoredProcedure)
+        public DbDataReader GetDataReader(string procedureName, List<DbParameter> parameters, CommandType commandType = CommandType.StoredProcedure)
         {
             DbDataReader ds;
             try
